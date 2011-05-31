@@ -5,11 +5,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "socket.h"
 
-typedef struct {
+struct sockinfo {
 	int socket;
 	struct sockaddr_storage addr;
-} sockinfo;
+};
 
 void socket_close(int s)
 {
