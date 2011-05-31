@@ -2,13 +2,14 @@
 #include <unistd.h>
 #include "socket.h"
 #include "client.h"
+#include "server.h"
 
-typedef struct {
+struct server{
 	int socket;
 	int maxfd;
 	fd_set readfds;
 	client *clients;
-} server;
+};
 
 server *server_new(int port)
 {
@@ -23,7 +24,7 @@ server *server_new(int port)
 	return s;
 }
 
-void server_do(server *s)
+int server_do(server *s)
 {
 	fd_set readfds;
 /*	client *c;*/
@@ -36,6 +37,8 @@ void server_do(server *s)
 	{
 		client_new(&s->clients, s->socket);
 	}
+
+	return 1;
 }
 
 void server_destroy(server *s)
