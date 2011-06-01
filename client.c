@@ -1,9 +1,10 @@
+#include "client.h"
 #include "socket.h"
 
-typedef struct {
+struct client{
 	int a, b, c;
 	struct client *next;
-} client;
+};
 
 void client_new(client **c, int s)
 {
