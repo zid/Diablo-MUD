@@ -4,7 +4,7 @@
 #include "client.h"
 #include "server.h"
 
-struct server{
+struct server {
 	int socket;
 	int maxfd;
 	fd_set readfds;
@@ -27,15 +27,32 @@ server *server_new(int port)
 int server_do(server *s)
 {
 	fd_set readfds;
-/*	client *c;*/
+	int i;
 
+	/* s->readfds is an accurate list of all our
+	 * clients currently connected. Copy it here
+	 * and then we can act on every client.
+	 */
 	readfds = s->readfds;
 
 	select(s->maxfd + 1, &readfds, NULL, NULL, NULL);
 
-	if(FD_ISSET(s->socket, &readfds))
+	/* Check for file descriptors that need reading
+	 * and pass them off to client_handle if they do.
+	 */
+	for(i = 0; i < s->maxfds; i++)
 	{
-		client_new(&s->clients, s->socket);
+		if(!FD_ISSET(i, &readfds))
+			continue;
+
+		/* The server's socket needing reading
+		 * is special, it means a new client has
+		 * connected so handle it seperately.
+		 */
+		if(i == s->socket)
+			client_new(&s->clients, s->socket);
+		else
+			client_handle(i);
 	}
 
 	return 1;
