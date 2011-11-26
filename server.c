@@ -51,11 +51,11 @@ int server_do(server *s)
 		if(i == s->socket)
 		{
 			int newfd;
-
+			
 			newfd = client_new(s->socket);
 			if(!newfd)
 				continue;
-
+		
 			FD_SET(newfd, &s->readfds);
 			if(newfd > s->maxfd)
 				s->maxfd = newfd;

@@ -22,6 +22,15 @@ int socket_get(struct sockinfo *i)
 	return i->socket;
 }
 
+int socket_read(int s, char *buf, int len)
+{
+	int r;
+
+	r = recv(s, buf, len, 0);
+
+	return r;
+}
+
 sockinfo *socket_accept(int s)
 {
 
