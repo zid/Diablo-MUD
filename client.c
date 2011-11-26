@@ -11,27 +11,32 @@ static struct client **clients;
 static int nclients;
 static int client_list_size;
 
-void client_new(int s)
+int client_new(int s)
 {
 	sockinfo *i;
 	int clientsock;
 
 	i = socket_accept(s);
 	if(!i)
-		return;
-	
-	clientsock = socket_get(i);
+		return 0;
 
 	nclients++;
 	if(nclients > client_list_size)
 	{
-		client_list_size *= 2;
+		client_list_size = nclients * 2;
 		clients = realloc(clients, 
 			sizeof(struct client *) * client_list_size);
 	}
 	
 	clients[s] = malloc(sizeof(struct client));
 	clients[s]->si = i;
+
+	/* Returns the file descriptor of the client so that
+	 * the server can add it to its fd list to select on.
+	 */
+	clientsock = socket_get(i);
+
+	return clientsock;
 }
 
 /* s is the file descriptor of a client that has

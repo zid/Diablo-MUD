@@ -49,8 +49,17 @@ int server_do(server *s)
 		 * connected so handle it seperately.
 		 */
 		if(i == s->socket)
-			client_new(s->socket);
-		else
+		{
+			int newfd;
+
+			newfd = client_new(s->socket);
+			if(!newfd)
+				continue;
+
+			FD_SET(newfd, &s->readfds);
+			if(newfd > s->maxfd)
+				s->maxfd = newfd;
+		} else
 			client_handle(i);
 	}
 

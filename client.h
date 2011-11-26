@@ -3,6 +3,6 @@
 
 typedef struct client client;
 
-void client_new(int s);
+int client_new(int s);
 void client_handle(int s);
 #endif
