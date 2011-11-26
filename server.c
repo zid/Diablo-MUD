@@ -8,7 +8,6 @@ struct server {
 	int socket;
 	int maxfd;
 	fd_set readfds;
-	client *clients;
 };
 
 server *server_new(int port)
@@ -40,7 +39,7 @@ int server_do(server *s)
 	/* Check for file descriptors that need reading
 	 * and pass them off to client_handle if they do.
 	 */
-	for(i = 0; i < s->maxfds; i++)
+	for(i = 0; i < s->maxfd; i++)
 	{
 		if(!FD_ISSET(i, &readfds))
 			continue;
@@ -50,7 +49,7 @@ int server_do(server *s)
 		 * connected so handle it seperately.
 		 */
 		if(i == s->socket)
-			client_new(&s->clients, s->socket);
+			client_new(s->socket);
 		else
 			client_handle(i);
 	}

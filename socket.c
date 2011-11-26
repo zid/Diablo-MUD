@@ -17,6 +17,11 @@ void socket_close(int s)
 	close(s);
 }
 
+int socket_get(struct sockinfo *i)
+{
+	return i->socket;
+}
+
 sockinfo *socket_accept(int s)
 {
 
@@ -26,6 +31,12 @@ sockinfo *socket_accept(int s)
 	info = malloc(sizeof(sockinfo));
 
 	info->socket = accept(s, (struct sockaddr *)&info->addr, &addr_size);
+	
+	if(!info->socket)
+	{
+		free(info);
+		return NULL;
+	}
 
 	return info;
 }
