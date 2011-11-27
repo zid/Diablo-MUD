@@ -68,6 +68,7 @@ static void client_destroy(int s)
 	free(c->si);
 	free(c);
 	clients[s] = NULL;
+	socket_close(s);
 }
 
 /* s is the file descriptor of a client that has
