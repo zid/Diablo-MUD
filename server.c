@@ -39,7 +39,7 @@ int server_do(server *s)
 	/* Check for file descriptors that need reading
 	 * and pass them off to client_handle if they do.
 	 */
-	for(i = 0; i < s->maxfd; i++)
+	for(i = 0; i <= s->maxfd; i++)
 	{
 		if(!FD_ISSET(i, &readfds))
 			continue;

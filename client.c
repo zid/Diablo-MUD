@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "client.h"
 #include "socket.h"
 
@@ -9,42 +10,64 @@ struct client {
 };
 
 static struct client **clients;
-static int nclients;
-static int client_list_size;
+static int maxfd;
 
 int client_new(int s)
 {
 	sockinfo *i;
-	int clientsock;
+	int newfd;
 
 	i = socket_accept(s);
 	if(!i)
 		return 0;
 
-	nclients++;
-	if(nclients > client_list_size)
+	/* We have the connection details, but not the actual
+	 * file decriptor itself, use socket.c to extract it
+	 * for us.
+	 */
+	newfd = socket_get(i);
+
+	/* First new client - list needs creating */
+	if(!clients)
 	{
-		client_list_size = nclients * 2;
+		clients = calloc(newfd, sizeof(struct client *));
+		maxfd = newfd;
+	}
+
+	/* This fd is the largest fd we've ever seen
+	 * so the client array won't be big enough for it.
+	 * Reallocate it big enough for the new fd
+	 * and zero all of the memory between the  
+	 * previous biggest and the new biggest.
+	 */
+	if(newfd > maxfd)
+	{
 		clients = realloc(clients, 
-			sizeof(struct client *) * client_list_size);
+			sizeof(struct client *) * (newfd + 1));
+		memset(&clients[maxfd + 1], 0, 
+			(newfd - maxfd) * sizeof(struct client *));
+		maxfd = newfd;
 	}
 	
-	clients[s] = malloc(sizeof(struct client));
-	clients[s]->si = i;
-	clients[s]->buf[0] = 0;
-	clients[s]->filled = 0;
+	clients[newfd] = malloc(sizeof(struct client));
+	clients[newfd]->si = i;
+	clients[newfd]->buf[0] = 0;
+	clients[newfd]->filled = 0;
 
-	/* Returns the file descriptor of the client so that
-	 * the server can add it to its fd list to select on.
+	/* The server wants this fd so it can update the
+	 * file descriptor read set.
 	 */
-	clientsock = socket_get(i);
-
-	return clientsock;
+	return newfd;
 }
 
 static void client_destroy(int s)
 {
+	client *c;
 
+	c = clients[s];
+	free(c->si);
+	free(c);
+	clients[s] = NULL;
 }
 
 /* s is the file descriptor of a client that has
@@ -77,7 +100,10 @@ void client_handle(int s)
 	/* The input steam has a newline in it, we're done */
 	if(c->buf[c->filled - 1] == '\n')
 	{
+		c->buf[c->filled] = '\0'; 
 		/* parse(c); */
+		c->filled = 0;
+		c->buf[0] = 0;
 	}
 
 }
