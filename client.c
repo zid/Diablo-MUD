@@ -74,8 +74,10 @@ static void client_destroy(int s)
  * pending data. Turn it back into a struct client
  * using the lookup table.
  * Read data up to 256 characters from the socket.
+ * Returns the status of the client, true for alive
+ * or false for dead.
  */
-void client_handle(int s)
+int client_handle(int s)
 {
 	client *c;
 	int r;
@@ -87,8 +89,10 @@ void client_handle(int s)
 	 */
 	r = socket_read(s, &c->buf[c->filled], 256 - c->filled);
 	if(r == 0)
+	{
 		client_destroy(s);
-	
+		return 0;
+	}
 	c->filled += r;
 
 	/* The buffer got filled entirely, cut the input short here */
@@ -106,5 +110,6 @@ void client_handle(int s)
 		c->buf[0] = 0;
 	}
 
+	return 1;
 }
 

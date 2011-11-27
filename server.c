@@ -59,8 +59,15 @@ int server_do(server *s)
 			FD_SET(newfd, &s->readfds);
 			if(newfd > s->maxfd)
 				s->maxfd = newfd;
-		} else
-			client_handle(i);
+		} else {
+			int r;
+
+			/* If r is 0, then the client disconnected. */
+			r = client_handle(i);
+			if(!r)
+				FD_CLR(i, &s->readfds);
+				
+		}
 	}
 
 	return 1;
