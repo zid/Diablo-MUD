@@ -2,10 +2,10 @@
 #include <string.h>
 #include "client.h"
 #include "socket.h"
+#include "buffer.h"
 
 struct client {
-	char buf[256];
-	int filled;
+	struct buffer *buffer;
 	struct sockinfo *si;
 };
 
@@ -51,9 +51,7 @@ int client_new(int s)
 	
 	clients[newfd] = malloc(sizeof(struct client));
 	clients[newfd]->si = i;
-	clients[newfd]->buf[0] = 0;
-	clients[newfd]->filled = 0;
-
+	clients[newfd]->buffer = buffer_init();
 	/* The server wants this fd so it can update the
 	 * file descriptor read set.
 	 */
@@ -64,10 +62,12 @@ static void client_destroy(int s)
 {
 	client *c;
 
-	c = clients[s];
-	free(c->si);
-	free(c);
+	c = clients[s];	
 	clients[s] = NULL;
+	
+	free(c->si);
+	buffer_free(c->buffer);
+	free(c);
 	socket_close(s);
 }
 
@@ -81,36 +81,28 @@ static void client_destroy(int s)
 int client_handle(int s)
 {
 	client *c;
+	char buf[256];
 	int r;
 
 	c = clients[s];
 	
-	/* Read from the socket up to an amount that
-	 * would not go longer than 256 bytes.
-	 */
-	r = socket_read(s, &c->buf[c->filled], 256 - c->filled);
+	/* Read up to 256 bytes from the client */
+	r = socket_read(s, buf, 256);
 	if(r == 0)
 	{
+		/* 0 bytes read means the client has disconnected */
 		client_destroy(s);
 		return 0;
 	}
-	c->filled += r;
 
-	/* The buffer got filled entirely, cut the input short here */
-	if(c->filled == 256)
+	/* Returns whether the buffer has something useful in it */
+	r = buffer_add(c->buffer, buf, r); 
+	if(r)
 	{
-		c->buf[255] = '\n';
-	}
-	
-	/* The input steam has a newline in it, we're done */
-	if(c->buf[c->filled - 1] == '\n')
-	{
-		c->buf[c->filled] = '\0'; 
-		/* parse(c); */
-		c->filled = 0;
-		c->buf[0] = 0;
-	}
+		printf("Client said %s", buffer_get(c->buffer));
+	//	parse();
 
+	}
 	return 1;
 }
 
