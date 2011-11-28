@@ -12,6 +12,12 @@ struct sockinfo {
 	struct sockaddr_storage addr;
 };
 
+void socket_free(struct sockinfo *si)
+{
+	close(si->socket);
+	free(si);
+}
+
 void socket_close(int s)
 {
 	close(s);

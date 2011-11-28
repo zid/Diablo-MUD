@@ -3,6 +3,7 @@
 typedef struct sockinfo sockinfo;
 
 void socket_close(int s);
+void socket_free(struct sockinfo *);
 int socket_listen_new(int port);
 sockinfo *socket_accept(int s);
 int socket_get(sockinfo *);
