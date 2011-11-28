@@ -98,7 +98,7 @@ int client_handle(int s)
 	r = buffer_add(c->buffer, buf, r); 
 	if(r)
 	{
-		printf("Client said %s", buffer_get(c->buffer));
+		printf("Client %d said '%s'\n", s, buffer_get(c->buffer));
 	//	parse();
 
 	}
