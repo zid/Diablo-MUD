@@ -7,6 +7,8 @@
 struct client {
 	struct buffer *buffer;
 	struct sockinfo *si;
+
+	int state;
 };
 
 static struct client **clients;
@@ -52,6 +54,11 @@ int client_new(int s)
 	clients[newfd] = malloc(sizeof(struct client));
 	clients[newfd]->si = i;
 	clients[newfd]->buffer = buffer_init();
+	clients[newfd]->state = CONNECTING;
+
+
+	login_send_banner(newfd);
+
 	/* The server wants this fd so it can update the
 	 * file descriptor read set.
 	 */
