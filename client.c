@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "client.h"
 #include "socket.h"
 #include "buffer.h"
+#include "login.h"
 
 struct client {
 	struct buffer *buffer;
@@ -13,6 +15,55 @@ struct client {
 
 static struct client **clients;
 static int maxfd;
+
+static void login_ask_username(int cfd, client *c)
+{
+	const char msg[] = "\r\nusername: ";
+	int msg_len = sizeof(msg) - 1;
+
+	c->state = USERNAME;
+	socket_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
+}
+
+static void login_ask_password(int cfd, client *c)
+{
+	const char msg[] = "\r\npassword: ";
+	int msg_len = sizeof(msg) - 1;
+
+	c->state = PASSWORD;
+	socket_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
+}
+
+static void send_prompt(int cfd)
+{
+	const char msg[] = "\r\n> ";
+	int msg_len = sizeof(msg) - 1;
+
+	socket_send(cfd, msg, msg_len);
+}
+
+static void parse(int cfd, client *c)
+{
+	switch(c->state)
+	{
+		case CONNECTING:
+			/* not used */
+			break;
+		case USERNAME:
+			login_ask_password(cfd, c);
+			break;
+		case PASSWORD:
+			/* TODO: check the username and password */
+			login_send_motd(cfd);
+			c->state = CONNECTED;
+			send_prompt(cfd);
+			break;
+		case CONNECTED:
+			/* TODO: parse the command prompt */
+			send_prompt(cfd);
+			break;
+	}
+}
 
 int client_new(int s)
 {
@@ -58,6 +109,8 @@ int client_new(int s)
 
 
 	login_send_banner(newfd);
+
+	login_ask_username(newfd, clients[newfd]);
 
 	/* The server wants this fd so it can update the
 	 * file descriptor read set.
@@ -105,8 +158,8 @@ int client_handle(int s)
 	r = buffer_add(c->buffer, buf, r); 
 	if(r)
 	{
-		printf("Client %d said '%s'\n", s, buffer_get(c->buffer));
-	//	parse();
+	//	printf("Client %d said '%s'\n", s, buffer_get(c->buffer));
+		parse(s, c);
 
 	}
 	return 1;

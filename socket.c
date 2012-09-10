@@ -37,6 +37,24 @@ int socket_read(int s, char *buf, int len)
 	return r;
 }
 
+/* assume send() goes to an OS buffer that won't block long. */
+int socket_send(int s, const char *buf, int len)
+{
+	int r;
+	int total = 0;
+
+	do
+	{
+		r = send(s, buf, len, 0);
+		if(r <= 0)
+			return r;
+		total += r;
+	}
+	while(total < len);
+
+	return r;
+}
+
 sockinfo *socket_accept(int s)
 {
 
