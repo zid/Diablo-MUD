@@ -58,7 +58,7 @@ static void handle_username(int cfd, client *c)
 	char *name = malloc(str_len + 1);
 	memcpy(name, buf, str_len + 1);
 
-	character *chr = character_new();
+	character *chr = c->ch;
 
 	// Username invalidly formatted
 	if(!character_set_username(chr, name))
@@ -138,7 +138,7 @@ int client_new(int s)
 	clients[newfd]->si = i;
 	clients[newfd]->buffer = buffer_init();
 	clients[newfd]->state = CONNECTING;
-
+	clients[newfd]->ch = character_new();
 
 	login_send_banner(newfd);
 
@@ -150,7 +150,7 @@ int client_new(int s)
 	return newfd;
 }
 
-static void client_destroy(int s)
+void client_destroy(int s)
 {
 	client *c;
 
@@ -159,6 +159,7 @@ static void client_destroy(int s)
 	
 	socket_free(c->si);
 	buffer_free(c->buffer);
+	character_free(c->ch);
 	free(c);
 }
 
@@ -196,4 +197,5 @@ int client_handle(int s)
 	}
 	return 1;
 }
+
 
