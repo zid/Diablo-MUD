@@ -6,7 +6,8 @@ struct character {
 	char *username;
 };
 
-character *character_new(char *username) {
+character *character_new(char *username)
+{
 	character *ch;
 	ch = malloc(sizeof(character));
 	ch->username = username;
@@ -14,7 +15,8 @@ character *character_new(char *username) {
 	return ch;
 }
 
-int character_set_username(character *ch, char *username) {
+int character_set_username(character *ch, char *username) 
+{
 	// Check whether username is validly formatted? [if not, return false?]
 	
 	ch->username = username;		
@@ -22,7 +24,8 @@ int character_set_username(character *ch, char *username) {
 }
 
 
-void character_free(character *ch) {
+void character_free(character *ch)
+{
 	free(ch->username);
 	free(ch);
 }
