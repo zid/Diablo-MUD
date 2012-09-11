@@ -17,13 +17,24 @@ struct client {
 static struct client **clients;
 static int maxfd;
 
+static void client_send(int cfd, const char *msg, int msg_len)
+{
+	int r;
+	r = socket_send(cfd, msg, msg_len);
+	 
+	// The client has disconnected, destroy it
+	if(!r)
+		client_destroy(cfd);
+}
+
+
 static void login_ask_username(int cfd, client *c)
 {
 	const char msg[] = "\r\nusername: ";
 	int msg_len = sizeof(msg) - 1;
 
 	c->state = USERNAME;
-	socket_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
+	client_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
 }
 
 static void login_ask_password(int cfd, client *c)
@@ -32,14 +43,15 @@ static void login_ask_password(int cfd, client *c)
 	int msg_len = sizeof(msg) - 1;
 
 	c->state = PASSWORD;
-	socket_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
+	client_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
 }
 
 static void send_invalid_username_format(int cfd)
 {
 	const char msg[] = "\r\nusername must be ... ";
+
 	int msg_len = sizeof(msg) - 1;
-	socket_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
+	client_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
 
 }
 
@@ -48,7 +60,7 @@ static void send_prompt(int cfd)
 	const char msg[] = "\r\n> ";
 	int msg_len = sizeof(msg) - 1;
 
-	socket_send(cfd, msg, msg_len);
+	client_send(cfd, msg, msg_len);
 }
 
 static void handle_username(int cfd, client *c)
