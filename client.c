@@ -54,8 +54,9 @@ static void send_prompt(int cfd)
 static void handle_username(int cfd, client *c)
 {
 	char const *buf = buffer_get(c->buffer);
-	char *name = malloc(c->buffer->len);
-	memcpy(name, buf, strlen(c->buffer->len));
+	int str_len = (int) strlen(buf);
+	char *name = malloc(str_len + 1);
+	memcpy(name, buf, str_len + 1);
 
 	character *chr = character_new();
 
