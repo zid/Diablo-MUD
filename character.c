@@ -8,13 +8,13 @@ struct character {
 
 character *character_new(char *username) {
 	character *ch;
-	ch = (character *) malloc(sizeof(character));
+	ch = malloc(sizeof(character));
 	ch->username = username;
 	
 	return ch;
 }
 
-int character_set_username(charater *ch, char *username) {
+int character_set_username(character *ch, char *username) {
 	// Check whether username is validly formatted? [if not, return false?]
 	
 	ch->username = username;		
