@@ -37,7 +37,7 @@ static void login_ask_password(int cfd, client *c)
 
 static void send_invalid_username_format(int cfd)
 {
-	const char msg[] = "username must be ... ";
+	const char msg[] = "\r\nusername must be ... ";
 	int msg_len = sizeof(msg) - 1;
 	socket_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
 
