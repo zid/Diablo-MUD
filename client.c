@@ -5,11 +5,12 @@
 #include "socket.h"
 #include "buffer.h"
 #include "login.h"
+#include "character.h"
 
 struct client {
 	struct buffer *buffer;
 	struct sockinfo *si;
-
+	struct character *ch;
 	int state;
 };
 
@@ -34,6 +35,14 @@ static void login_ask_password(int cfd, client *c)
 	socket_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
 }
 
+static void send_invalid_username_format(int cfd)
+{
+	const char msg[] = "username must be ... ";
+	int msg_len = sizeof(msg) - 1;
+	socket_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
+
+}
+
 static void send_prompt(int cfd)
 {
 	const char msg[] = "\r\n> ";
@@ -50,7 +59,20 @@ static void parse(int cfd, client *c)
 			/* not used */
 			break;
 		case USERNAME:
-			login_ask_password(cfd, c);
+		
+			char const *name = buffer_get(c->buffer);
+			character *chr = character_new();
+			
+			// Username invalidly formatted
+			if(!character_set_username(chr, name))
+			{
+				send_invalid_username_format(cfd);
+				login_ask_username(cfd, c);				
+			} else
+			{
+				login_ask_password(cfd, c);
+			}
+
 			break;
 		case PASSWORD:
 			/* TODO: check the username and password */

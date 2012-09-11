@@ -10,7 +10,6 @@ character *character_new(char *username)
 {
 	character *ch;
 	ch = malloc(sizeof(character));
-	ch->username = username;
 	
 	return ch;
 }
