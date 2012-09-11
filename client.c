@@ -51,6 +51,26 @@ static void send_prompt(int cfd)
 	socket_send(cfd, msg, msg_len);
 }
 
+static void handle_username(int cfd, client *c)
+{
+	char const *buf = buffer_get(c->buffer);
+	char *name = malloc (c->buffer.len);
+	memcpy(name, buf, strlen(c->buffer.len));
+
+	character *chr = character_new();
+
+	// Username invalidly formatted
+	if(!character_set_username(chr, name))
+	{
+		send_invalid_username_format(cfd);
+		login_ask_username(cfd, c);
+	} else
+	{
+		login_ask_password(cfd, c);
+	}
+
+}
+
 static void parse(int cfd, client *c)
 {
 	switch(c->state)
@@ -59,19 +79,7 @@ static void parse(int cfd, client *c)
 			/* not used */
 			break;
 		case USERNAME:
-		
-			char const *name = buffer_get(c->buffer);
-			character *chr = character_new();
-			
-			// Username invalidly formatted
-			if(!character_set_username(chr, name))
-			{
-				send_invalid_username_format(cfd);
-				login_ask_username(cfd, c);				
-			} else
-			{
-				login_ask_password(cfd, c);
-			}
+			handle_username(cfd, c);
 
 			break;
 		case PASSWORD:
@@ -86,6 +94,7 @@ static void parse(int cfd, client *c)
 			break;
 	}
 }
+
 
 int client_new(int s)
 {

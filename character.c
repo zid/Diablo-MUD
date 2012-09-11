@@ -6,7 +6,7 @@ struct character {
 	char *username;
 };
 
-character *character_new(char *username)
+character *character_new()
 {
 	character *ch;
 	ch = malloc(sizeof(character));
