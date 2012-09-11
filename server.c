@@ -52,7 +52,7 @@ int server_do(server *s)
 		{
 			int newfd;
 			
-			newfd = client_new(s->socket);
+			newfd = client_init(s->socket);
 			if(!newfd)
 				continue;
 		

@@ -84,7 +84,7 @@ static void parse(int cfd, client *c)
 }
 
 
-int client_new(int s)
+int client_init(int s)
 {
 	sockinfo *i;
 	int newfd;
@@ -125,7 +125,7 @@ int client_new(int s)
 	clients[newfd]->si = i;
 	clients[newfd]->buffer = buffer_init();
 	clients[newfd]->state = CONNECTING;
-	clients[newfd]->ch = character_new();
+	clients[newfd]->ch = character_init();
 
 	login_send_banner(newfd);
 
