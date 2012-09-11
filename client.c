@@ -87,6 +87,7 @@ static void parse(int cfd, client *c)
 int client_init(int s)
 {
 	sockinfo *i;
+	struct client *c;
 	int newfd;
 
 	i = socket_accept(s);
@@ -120,15 +121,15 @@ int client_init(int s)
 			(newfd - maxfd) * sizeof(struct client *));
 		maxfd = newfd;
 	}
-	
-	clients[newfd] = malloc(sizeof(struct client));
-	clients[newfd]->si = i;
-	clients[newfd]->buffer = buffer_init();
-	clients[newfd]->state = CONNECTING;
-	clients[newfd]->ch = character_init();
+
+
+	c = malloc(sizeof(struct client));
+	c->si = i;
+	c->buffer = buffer_init();
+	c->ch = character_init();
+	c->state = CONNECTING;
 
 	login_send_banner(newfd);
-
 	login_ask_username(newfd, clients[newfd]);
 
 	/* The server wants this fd so it can update the
