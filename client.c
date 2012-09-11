@@ -22,7 +22,7 @@ static void client_send(int cfd, const char *msg, int msg_len)
 	int r;
 	r = socket_send(cfd, msg, msg_len);
 	 
-	// The client has disconnected, destroy it
+	/* The client has disconnected, destroy it */
 	if(!r)
 		client_destroy(cfd);
 }
@@ -34,7 +34,7 @@ static void login_ask_username(int cfd, client *c)
 	int msg_len = sizeof(msg) - 1;
 
 	c->state = USERNAME;
-	client_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
+	client_send(cfd, msg, msg_len); 
 }
 
 static void login_ask_password(int cfd, client *c)
@@ -43,15 +43,15 @@ static void login_ask_password(int cfd, client *c)
 	int msg_len = sizeof(msg) - 1;
 
 	c->state = PASSWORD;
-	client_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
+	client_send(cfd, msg, msg_len); 
 }
 
 static void send_invalid_username_format(int cfd)
 {
-	const char msg[] = "\r\nusername must be ... ";
+	const char msg[] = "\r\n Invalid username. Username must be no longer than 10 characters, and cannot contain any symbols";
 
 	int msg_len = sizeof(msg) - 1;
-	client_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
+	client_send(cfd, msg, msg_len); 
 
 }
 
