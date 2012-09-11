@@ -33,7 +33,7 @@ static void login_ask_username(int cfd, client *c)
 	const char msg[] = "\r\nusername: ";
 
 	c->state = USERNAME;
-	client_send(cfd, msg, sizeof(msg) -1); 
+	client_send(cfd, msg, sizeof(msg) - 1); 
 }
 
 static void login_ask_password(int cfd)
@@ -52,7 +52,9 @@ static void send_prompt(int cfd)
 
 static void handle_username(client *c)
 {
-	char const *buf = buffer_get(c->buffer);
+	const char *buf;
+
+	buf = buffer_get(c->buffer);
 	character_set_username(c->ch, buf);
 }
 
