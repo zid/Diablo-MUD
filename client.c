@@ -5,41 +5,57 @@
 #include "socket.h"
 #include "buffer.h"
 #include "login.h"
+#include "character.h"
 
 struct client {
 	struct buffer *buffer;
 	struct sockinfo *si;
-
+	struct character *ch;
 	int state;
 };
 
 static struct client **clients;
 static int maxfd;
 
+static void client_send(int cfd, const char *msg, int msg_len)
+{
+	int r;
+	r = socket_send(cfd, msg, msg_len);
+	 
+	/* The client has disconnected, destroy it */
+	if(!r)
+		client_destroy(cfd);
+}
+
+
 static void login_ask_username(int cfd, client *c)
 {
 	const char msg[] = "\r\nusername: ";
-	int msg_len = sizeof(msg) - 1;
 
 	c->state = USERNAME;
-	socket_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
+	client_send(cfd, msg, sizeof(msg) - 1); 
 }
 
-static void login_ask_password(int cfd, client *c)
+static void login_ask_password(int cfd)
 {
 	const char msg[] = "\r\npassword: ";
-	int msg_len = sizeof(msg) - 1;
 
-	c->state = PASSWORD;
-	socket_send(cfd, msg, msg_len); /* TODO: kill the client on an error */
+	client_send(cfd, msg, sizeof(msg) - 1);
 }
 
 static void send_prompt(int cfd)
 {
 	const char msg[] = "\r\n> ";
-	int msg_len = sizeof(msg) - 1;
 
-	socket_send(cfd, msg, msg_len);
+	client_send(cfd, msg, sizeof(msg) - 1);
+}
+
+static void handle_username(client *c)
+{
+	const char *buf;
+
+	buf = buffer_get(c->buffer);
+	character_set_username(c->ch, buf);
 }
 
 static void parse(int cfd, client *c)
@@ -50,7 +66,9 @@ static void parse(int cfd, client *c)
 			/* not used */
 			break;
 		case USERNAME:
-			login_ask_password(cfd, c);
+			handle_username(c);
+			login_ask_password(cfd);
+			c->state = PASSWORD;
 			break;
 		case PASSWORD:
 			/* TODO: check the username and password */
@@ -65,9 +83,11 @@ static void parse(int cfd, client *c)
 	}
 }
 
-int client_new(int s)
+
+int client_init(int s)
 {
 	sockinfo *i;
+	struct client *c;
 	int newfd;
 
 	i = socket_accept(s);
@@ -101,15 +121,15 @@ int client_new(int s)
 			(newfd - maxfd) * sizeof(struct client *));
 		maxfd = newfd;
 	}
-	
-	clients[newfd] = malloc(sizeof(struct client));
-	clients[newfd]->si = i;
-	clients[newfd]->buffer = buffer_init();
-	clients[newfd]->state = CONNECTING;
 
+
+	c = malloc(sizeof(struct client));
+	c->si = i;
+	c->buffer = buffer_init();
+	c->ch = character_init();
+	c->state = CONNECTING;
 
 	login_send_banner(newfd);
-
 	login_ask_username(newfd, clients[newfd]);
 
 	/* The server wants this fd so it can update the
@@ -118,7 +138,7 @@ int client_new(int s)
 	return newfd;
 }
 
-static void client_destroy(int s)
+void client_destroy(int s)
 {
 	client *c;
 
@@ -127,6 +147,7 @@ static void client_destroy(int s)
 	
 	socket_free(c->si);
 	buffer_free(c->buffer);
+	character_free(c->ch);
 	free(c);
 }
 
@@ -164,4 +185,5 @@ int client_handle(int s)
 	}
 	return 1;
 }
+
 

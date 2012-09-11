@@ -3,8 +3,9 @@
 
 typedef struct client client;
 
-int client_new(int s);
+int client_init(int s);
 int client_handle(int s);
+void client_destroy(int cfd);
 
 enum {
 	CONNECTING,
