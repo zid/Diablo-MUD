@@ -31,57 +31,29 @@ static void client_send(int cfd, const char *msg, int msg_len)
 static void login_ask_username(int cfd, client *c)
 {
 	const char msg[] = "\r\nusername: ";
-	int msg_len = sizeof(msg) - 1;
 
 	c->state = USERNAME;
-	client_send(cfd, msg, msg_len); 
+	client_send(cfd, msg, sizeof(msg) -1); 
 }
 
-static void login_ask_password(int cfd, client *c)
+static void login_ask_password(int cfd)
 {
 	const char msg[] = "\r\npassword: ";
-	int msg_len = sizeof(msg) - 1;
 
-	c->state = PASSWORD;
-	client_send(cfd, msg, msg_len); 
-}
-
-static void send_invalid_username_format(int cfd)
-{
-	const char msg[] = "\r\n Invalid username. Username must be no longer than 10 characters, and cannot contain any symbols";
-
-	int msg_len = sizeof(msg) - 1;
-	client_send(cfd, msg, msg_len); 
-
+	client_send(cfd, msg, sizeof(msg) - 1);
 }
 
 static void send_prompt(int cfd)
 {
 	const char msg[] = "\r\n> ";
-	int msg_len = sizeof(msg) - 1;
 
-	client_send(cfd, msg, msg_len);
+	client_send(cfd, msg, sizeof(msg) - 1);
 }
 
-static void handle_username(int cfd, client *c)
+static void handle_username(client *c)
 {
 	char const *buf = buffer_get(c->buffer);
-	int str_len = (int) strlen(buf);
-	char *name = malloc(str_len + 1);
-	memcpy(name, buf, str_len + 1);
-
-	character *chr = c->ch;
-
-	// Username invalidly formatted
-	if(!character_set_username(chr, name))
-	{
-		send_invalid_username_format(cfd);
-		login_ask_username(cfd, c);
-	} else
-	{
-		login_ask_password(cfd, c);
-	}
-
+	character_set_username(c->ch, buf);
 }
 
 static void parse(int cfd, client *c)
@@ -92,8 +64,9 @@ static void parse(int cfd, client *c)
 			/* not used */
 			break;
 		case USERNAME:
-			handle_username(cfd, c);
-
+			handle_username(c);
+			login_ask_password(cfd);
+			c->state = PASSWORD;
 			break;
 		case PASSWORD:
 			/* TODO: check the username and password */

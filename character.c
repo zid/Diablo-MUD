@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "character.h"
+#include <string.h>
 
 struct character {
 	char *username;
@@ -14,12 +15,9 @@ character *character_new()
 	return ch;
 }
 
-int character_set_username(character *ch, char *username) 
+void character_set_username(character *ch, char const *username) 
 {
-	// Check whether username is validly formatted? [if not, return false?]
-	
-	ch->username = username;		
-	return 1;
+	ch->username = strdup(username);		
 }
 
 

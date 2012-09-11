@@ -7,7 +7,7 @@ typedef struct character character;
 
 character *character_new();
 
-int character_set_username(character *ch, char *username);
+void character_set_username(character *ch, char const *username);
 
 void character_free(character *ch);
 #endif
