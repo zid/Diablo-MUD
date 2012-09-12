@@ -28,24 +28,23 @@ static void client_send(int cfd, const char *msg, int msg_len)
 }
 
 
-static void login_ask_username(int cfd, client *c)
+static void login_ask_username(int cfd)
 {
-	const char msg[] = "\r\nusername: ";
+	const char msg[] = "username: ";
 
-	c->state = USERNAME;
 	client_send(cfd, msg, sizeof(msg) - 1); 
 }
 
 static void login_ask_password(int cfd)
 {
-	const char msg[] = "\r\npassword: ";
+	const char msg[] = "password: ";
 
 	client_send(cfd, msg, sizeof(msg) - 1);
 }
 
 static void send_prompt(int cfd)
 {
-	const char msg[] = "\r\n> ";
+	const char msg[] = "\n> ";
 
 	client_send(cfd, msg, sizeof(msg) - 1);
 }
@@ -63,23 +62,25 @@ static void parse(int cfd, client *c)
 	switch(c->state)
 	{
 		case CONNECTING:
-			/* not used */
-			break;
+			login_send_banner(cfd);
+			login_ask_username(cfd);
+			c->state = USERNAME;
+		break;
 		case USERNAME:
 			handle_username(c);
 			login_ask_password(cfd);
 			c->state = PASSWORD;
-			break;
+		break;
 		case PASSWORD:
 			/* TODO: check the username and password */
 			login_send_motd(cfd);
 			c->state = CONNECTED;
 			send_prompt(cfd);
-			break;
+		break;
 		case CONNECTED:
 			/* TODO: parse the command prompt */
 			send_prompt(cfd);
-			break;
+		break;
 	}
 }
 
@@ -129,8 +130,9 @@ int client_init(int s)
 	c->ch = character_init();
 	c->state = CONNECTING;
 
-	login_send_banner(newfd);
-	login_ask_username(newfd, clients[newfd]);
+	clients[newfd] = c;
+
+	parse(newfd, c);
 
 	/* The server wants this fd so it can update the
 	 * file descriptor read set.
