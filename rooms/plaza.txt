@@ -1,0 +1,7 @@
+_This is the main plaza of the unnamed main city. A stone fountain in the center shoots clear water into a pool below, benches surround it.
+#fountain=The fountain looks fresh and inviting.
+#water=The water is wet.
+#benches=Wooden and made for sitting.
+$orange
+!greeter
+

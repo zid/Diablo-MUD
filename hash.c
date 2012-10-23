@@ -26,7 +26,7 @@ static unsigned long sdbm_hash(const char *key)
 	return hash;
 }
 
-struct table *new_table(void)
+struct table *table_new(void)
 {
 	struct table *t;
 
@@ -53,7 +53,7 @@ void table_add(struct table *t, const char *key, void *payload)
 	t->buckets[nbucket] = b;
 }
 
-void *table_lookup(struct table *t, const char *key)
+void *table_get(struct table *t, const char *key)
 {
 	unsigned long hash;
 	unsigned int bucket;
