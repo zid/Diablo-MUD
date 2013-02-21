@@ -3,17 +3,25 @@
 #include <string.h>
 #include "rooms.h"
 #include "character.h"
+#include "client.h"
 
 struct character {
 	char *username;
+	struct client *c;
 	room *r;
 };
 
-character *character_init()
+character *character_init(void *client)
 {
 	character *ch;
 	ch = malloc(sizeof(character));
+
+	/* For now, just shove everybody in the plaza when they connect */
 	ch->r = room_get("plaza");
+
+	/* Backreference to the controlling client, to assist in lookups */
+	ch->c = client;
+	
 	return ch;
 }
 
@@ -22,6 +30,10 @@ void character_set_username(character *ch, char const *username)
 	ch->username = strdup(username);		
 }
 
+const char *character_username(character *ch)
+{
+	return ch->username; 
+}
 
 void character_free(character *ch)
 {

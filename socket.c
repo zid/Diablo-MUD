@@ -38,10 +38,12 @@ int socket_read(int s, char *buf, int len)
 }
 
 /* assume send() goes to an OS buffer that won't block long. */
-int socket_send(int s, const char *buf, int len)
+int socket_send(sockinfo *si, const char *buf, int len)
 {
-	int r;
+	int r, s;
 	int total = 0;
+
+	s = si->socket;
 
 	do
 	{

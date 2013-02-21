@@ -8,5 +8,5 @@ int socket_listen_new(int port);
 sockinfo *socket_accept(int s);
 int socket_get(sockinfo *);
 int socket_read(int, char *, int);
-int socket_send(int, const char *, int);
+int socket_send(struct sockinfo *, const char *, int);
 #endif

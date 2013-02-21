@@ -1,11 +1,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include "client.h"
 #include "socket.h"
 #include "buffer.h"
 #include "login.h"
 #include "character.h"
+#include "parse.h"
 
 struct client {
 	struct buffer *buffer;
@@ -17,36 +19,36 @@ struct client {
 static struct client **clients;
 static int maxfd;
 
-static void client_send(int cfd, const char *msg, int msg_len)
+void client_send(client *c, const char *msg, int msg_len)
 {
 	int r;
-	r = socket_send(cfd, msg, msg_len);
+	r = socket_send(c->si, msg, msg_len);
 	 
 	/* The client has disconnected, destroy it */
 	if(!r)
-		client_destroy(cfd);
+		client_destroy(c);
 }
 
 
-static void login_ask_username(int cfd)
+static void login_ask_username(client *c)
 {
 	const char msg[] = "username: ";
 
-	client_send(cfd, msg, sizeof(msg) - 1); 
+	client_send(c, msg, sizeof(msg) - 1); 
 }
 
-static void login_ask_password(int cfd)
+static void login_ask_password(client *c)
 {
 	const char msg[] = "password: ";
 
-	client_send(cfd, msg, sizeof(msg) - 1);
+	client_send(c, msg, sizeof(msg) - 1);
 }
 
-static void send_prompt(int cfd)
+static void send_prompt(client *c)
 {
-	const char msg[] = "\n> ";
+	const char msg[] = "> ";
 
-	client_send(cfd, msg, sizeof(msg) - 1);
+	client_send(c, msg, sizeof(msg) - 1);
 }
 
 static void handle_username(client *c)
@@ -57,33 +59,57 @@ static void handle_username(client *c)
 	character_set_username(c->ch, buf);
 }
 
-static void parse(int cfd, client *c)
+static void parse(client *c)
 {
 	switch(c->state)
 	{
 		case CONNECTING:
-			login_send_banner(cfd);
-			login_ask_username(cfd);
+			login_send_banner(c);
+			login_ask_username(c);
 			c->state = USERNAME;
 		break;
 		case USERNAME:
 			handle_username(c);
-			login_ask_password(cfd);
+			login_ask_password(c);
 			c->state = PASSWORD;
 		break;
 		case PASSWORD:
 			/* TODO: check the username and password */
-			login_send_motd(cfd);
+			login_send_motd(c);
 			c->state = CONNECTED;
-			send_prompt(cfd);
+			send_prompt(c);
 		break;
 		case CONNECTED:
 			/* TODO: parse the command prompt */
-			send_prompt(cfd);
+			//send_prompt(c);
+			parse_command(c); send_prompt(c);
 		break;
 	}
 }
 
+void cprintf(client *c, const char *fmt, ...)
+{
+	va_list ap;
+	char buf[256];
+	int len;
+
+	va_start(ap, fmt);
+	len = vsnprintf(buf, 256, fmt, ap);
+	va_end(ap);
+
+	client_send(c, buf, len); 	
+
+}
+
+struct character *client_character(client *c)
+{
+	return c->ch;
+}
+
+const char *client_buffer(client *c)
+{
+	return buffer_get(c->buffer);
+}
 
 int client_init(int s)
 {
@@ -127,12 +153,12 @@ int client_init(int s)
 	c = malloc(sizeof(struct client));
 	c->si = i;
 	c->buffer = buffer_init();
-	c->ch = character_init();
+	c->ch = character_init(c);
 	c->state = CONNECTING;
 
 	clients[newfd] = c;
 
-	parse(newfd, c);
+	parse(c);
 
 	/* The server wants this fd so it can update the
 	 * file descriptor read set.
@@ -140,12 +166,12 @@ int client_init(int s)
 	return newfd;
 }
 
-void client_destroy(int s)
+void client_destroy(client *c)
 {
-	client *c;
+	int fd;
 
-	c = clients[s];	
-	clients[s] = NULL;
+	fd = socket_get(c->si);
+	clients[fd] = NULL;
 	
 	socket_free(c->si);
 	buffer_free(c->buffer);
@@ -173,7 +199,7 @@ int client_handle(int s)
 	if(r == 0)
 	{
 		/* 0 bytes read means the client has disconnected */
-		client_destroy(s);
+		client_destroy(c);
 		return 0;
 	}
 
@@ -182,7 +208,7 @@ int client_handle(int s)
 	if(r)
 	{
 	//	printf("Client %d said '%s'\n", s, buffer_get(c->buffer));
-		parse(s, c);
+		parse(c);
 
 	}
 	return 1;
