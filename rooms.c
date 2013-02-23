@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "rooms.h"
 #include "hash.h"
+#include "character.h" 
 
 static table *rooms;
 
 struct room {
+	const char *name;
 	const char *desc;
 	table *exits, *furniture, *chars, *objects;
 };
@@ -13,6 +16,27 @@ struct room {
 void rooms_init(void)
 {
 	rooms = table_new();
+}
+
+void room_add_character(struct room *r, character *ch, int reason)
+{
+	//character *t;
+	table_iterator *t;
+	/* Broadcast to each character in the room that a
+	 * new character has entered the room.
+	 */
+	t = table_iterate_over(r->chars);
+	while(1)
+	{
+		const char *name;
+
+		name = table_iterate(t);
+		if(!name)
+			break;
+		printf("'%s'\n", name);
+	}
+
+	table_add(r->chars, character_username(ch), ch); 
 }
 
 static struct room *room_new(void)
@@ -93,18 +117,17 @@ static struct room *room_parse(FILE *f)
 	{
 		n = get_line(f, buf);
 		if(!n)
-			goto err;
+			break;
 			
 		parse_line(r, buf);
 	}
 
 	return r;
+}
 
-err:
-	/* TODO: Free the tables and strings allocated already */
-	free(r);
-
-	return NULL;
+const char *room_name(room *r)
+{
+	return r->name;
 }
 
 struct room *room_get(const char *name)
@@ -128,7 +151,14 @@ struct room *room_get(const char *name)
 		return NULL;	/* -ENOROOM */
 
 	r = room_parse(f);
+	if(!r)
+	{
+		printf("Fuck, couldn't parse room %s\n", name);
+		return NULL;
+	}
+	r->name = strdup(name);
 
 	fclose(f);
+
 	return r;
 }

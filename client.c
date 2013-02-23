@@ -75,14 +75,15 @@ static void parse(client *c)
 		break;
 		case PASSWORD:
 			/* TODO: check the username and password */
-			login_send_motd(c);
+			login_client(c);
 			c->state = CONNECTED;
 			send_prompt(c);
 		break;
 		case CONNECTED:
 			/* TODO: parse the command prompt */
 			//send_prompt(c);
-			parse_command(c); send_prompt(c);
+			parse_command(c);
+			send_prompt(c);
 		break;
 	}
 }

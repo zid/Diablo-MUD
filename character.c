@@ -18,7 +18,6 @@ character *character_init(void *client)
 
 	/* For now, just shove everybody in the plaza when they connect */
 	ch->r = room_get("plaza");
-
 	/* Backreference to the controlling client, to assist in lookups */
 	ch->c = client;
 	
@@ -33,6 +32,11 @@ void character_set_username(character *ch, char const *username)
 const char *character_username(character *ch)
 {
 	return ch->username; 
+}
+
+const char *character_room_name(character *ch)
+{
+	return room_name(ch->r);
 }
 
 void character_free(character *ch)
