@@ -28,7 +28,7 @@ void parse_command(struct client *c)
 	{
 		whoami(c);
 	} else {
-		cprintf(c, "What?\r\n");
+		cprintf(c, "\r\nWhat?\r\n");
 	}
 
 	return;

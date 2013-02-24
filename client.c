@@ -77,7 +77,7 @@ static void parse(client *c)
 			/* TODO: check the username and password */
 			login_client(c);
 			c->state = CONNECTED;
-			send_prompt(c);
+			//send_prompt(c);
 		break;
 		case CONNECTED:
 			/* TODO: parse the command prompt */
@@ -86,6 +86,17 @@ static void parse(client *c)
 			send_prompt(c);
 		break;
 	}
+}
+
+void vcprintf(client *c, const char *fmt, va_list ap)
+{
+	char buf[256];
+	int len;
+
+	len = vsnprintf(buf+2, 254, fmt, ap);
+//	buf[0] = '\r';
+//	buf[1] = '\n';
+	client_send(c, buf, len+2);
 }
 
 void cprintf(client *c, const char *fmt, ...)

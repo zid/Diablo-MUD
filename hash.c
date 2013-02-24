@@ -34,7 +34,7 @@ table_iterator *table_iterate_over(table *t)
 	return ti;
 }
 
-const char *table_iterate(table_iterator *ti)
+void *table_iterate(table_iterator *ti)
 {
 	struct bucket *b;
 	b = ti->b;
@@ -96,9 +96,7 @@ void table_add(struct table *t, const char *key, void *payload)
 	struct bucket *b;
 
 	hash = sdbm_hash(key);
-
 	nbucket = hash % t->nbuckets;
-
 	b = malloc(sizeof(struct bucket));
 	b->payload = payload;
 	b->key = strdup(key);

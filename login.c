@@ -1,5 +1,13 @@
 #include "client.h"
+#include "character.h"
 #include "login.h"
+
+void login_client(client *c)
+{
+	/* TODO: Check login credentials! */
+
+	character_login(c);
+}
 
 void login_send_banner(client *c)
 {

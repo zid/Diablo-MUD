@@ -7,6 +7,10 @@
 
 static table *rooms;
 
+static const char *reasons[] = {
+	"login"
+};
+
 struct room {
 	const char *name;
 	const char *desc;
@@ -18,22 +22,27 @@ void rooms_init(void)
 	rooms = table_new();
 }
 
-void room_add_character(struct room *r, character *ch, int reason)
+void room_add_character(struct room *r, character *ch, int reason_code)
 {
 	//character *t;
 	table_iterator *t;
+
 	/* Broadcast to each character in the room that a
 	 * new character has entered the room.
 	 */
 	t = table_iterate_over(r->chars);
 	while(1)
 	{
-		const char *name;
-
-		name = table_iterate(t);
-		if(!name)
+		character *tc;
+		const char *name, *reason;
+		tc = table_iterate(t);
+		if(!tc)
 			break;
-		printf("'%s'\n", name);
+
+		name = character_username(ch);
+		reason = reasons[reason_code];
+		chprintf(tc, "%s entered the room via %s\r\n", 
+			name, reason );
 	}
 
 	table_add(r->chars, character_username(ch), ch); 
@@ -141,6 +150,7 @@ struct room *room_get(const char *name)
 		rooms_init();
 	/* See if the room is already loaded */
 	r = table_get(rooms, name);
+	printf("'%s' was %p in rooms\n", name, r);
 	if(r)
 		return r;
 
@@ -157,7 +167,7 @@ struct room *room_get(const char *name)
 		return NULL;
 	}
 	r->name = strdup(name);
-
+	table_add(rooms, name, r);
 	fclose(f);
 
 	return r;
