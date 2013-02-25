@@ -23,7 +23,7 @@ void client_send(client *c, const char *msg, int msg_len)
 {
 	int r;
 	r = socket_send(c->si, msg, msg_len);
-	 
+
 	/* The client has disconnected, destroy it */
 	if(!r)
 		client_destroy(c);
@@ -34,7 +34,7 @@ static void login_ask_username(client *c)
 {
 	const char msg[] = "username: ";
 
-	client_send(c, msg, sizeof(msg) - 1); 
+	client_send(c, msg, sizeof(msg) - 1);
 }
 
 static void login_ask_password(client *c)
@@ -94,8 +94,6 @@ void vcprintf(client *c, const char *fmt, va_list ap)
 	int len;
 
 	len = vsnprintf(buf, 254, fmt, ap);
-//	buf[0] = '\r';
-//	buf[1] = '\n';
 	client_send(c, buf, len);
 }
 
@@ -109,8 +107,7 @@ void cprintf(client *c, const char *fmt, ...)
 	len = vsnprintf(buf, 256, fmt, ap);
 	va_end(ap);
 
-	client_send(c, buf, len); 	
-
+	client_send(c, buf, len);
 }
 
 struct character *client_character(client *c)
@@ -149,7 +146,7 @@ int client_init(int s)
 	/* This fd is the largest fd we've ever seen
 	 * so the client array won't be big enough for it.
 	 * Reallocate it big enough for the new fd
-	 * and zero all of the memory between the  
+	 * and zero all of the memory between the
 	 * previous biggest and the new biggest.
 	 */
 	if(newfd > maxfd)
@@ -184,7 +181,7 @@ void client_destroy(client *c)
 
 	fd = socket_get(c->si);
 	clients[fd] = NULL;
-	
+
 	socket_free(c->si);
 	buffer_free(c->buffer);
 	character_free(c->ch);
@@ -205,7 +202,7 @@ int client_handle(int s)
 	int r;
 
 	c = clients[s];
-	
+
 	/* Read up to 256 bytes from the client */
 	r = socket_read(s, buf, 256);
 	if(r == 0)
@@ -216,13 +213,10 @@ int client_handle(int s)
 	}
 
 	/* Returns whether the buffer has something useful in it */
-	r = buffer_add(c->buffer, buf, r); 
+	r = buffer_add(c->buffer, buf, r);
 	if(r)
-	{
-	//	printf("Client %d said '%s'\n", s, buffer_get(c->buffer));
 		parse(c);
 
-	}
 	return 1;
 }
 

@@ -4,12 +4,13 @@
 #include "rooms.h"
 #include "table.h"
 #include "client.h"
-#include "character.h" 
+#include "character.h"
 
 static table *rooms;
 
 static const char *reasons[] = {
-	"login"
+	"login",
+	"logout"
 };
 
 struct room {
@@ -62,9 +63,37 @@ void room_look(client *c)
 		chprintf(ch, " is standing here.\r\n");
 }
 
+void room_del_character(room *r, character *ch, int reason_code)
+{
+	table_iterator *t;
+
+	/* Remove our character from the room */
+	table_del(r->chars, character_username(ch));
+
+	/* Broadcast to each character in the room that a
+	 * new character has left the room.
+	 */
+	t = table_iterate_over(r->chars);
+	while(1)
+	{
+		character *tc;
+		const char *name, *reason;
+
+		tc = table_iterate(t);
+		if(!tc)
+			break;
+
+		name = character_username(ch);
+		reason = reasons[reason_code];
+		chprintf(tc, "\r\n%s left the room via %s.\r\n",
+			name, reason );
+		character_prompt(tc);
+	}
+
+}
+
 void room_add_character(struct room *r, character *ch, int reason_code)
 {
-	//character *t;
 	table_iterator *t;
 
 	/* Broadcast to each character in the room that a
@@ -81,12 +110,12 @@ void room_add_character(struct room *r, character *ch, int reason_code)
 
 		name = character_username(ch);
 		reason = reasons[reason_code];
-		chprintf(tc, "\r\n%s entered the room via %s.\r\n", 
+		chprintf(tc, "\r\n%s entered the room via %s.\r\n",
 			name, reason );
 		character_prompt(tc);
 	}
 
-	table_add(r->chars, character_username(ch), ch); 
+	table_add(r->chars, character_username(ch), ch);
 }
 
 static struct room *room_new(void)
@@ -94,7 +123,7 @@ static struct room *room_new(void)
 	struct room *r;
 
 	r = calloc(sizeof(struct room), 1);
-	
+
 	r->exits = table_new();
 	r->furniture = table_new();
 	r->chars = table_new();
@@ -112,7 +141,7 @@ static int get_line(FILE *f, char *buf)
 		c = fgetc(f);
 		if(c == EOF)
 		{
-			fprintf(stderr, "Malformed area file\n"); 
+			fprintf(stderr, "Malformed area file\n");
 			break;
 		}
 		if(c == '\n')
@@ -132,7 +161,7 @@ static void parse_line(struct room *r, char *buf)
 
 	type = buf[0];
 	key = buf+1;
-	
+
 	value = strchr(buf, '=');
 	if(value)
 		*value++ = '\0'; /* Null terminate key */
@@ -168,7 +197,7 @@ static struct room *room_parse(FILE *f)
 		n = get_line(f, buf);
 		if(!n)
 			break;
-			
+
 		parse_line(r, buf);
 	}
 

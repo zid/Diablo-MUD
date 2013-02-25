@@ -6,7 +6,7 @@
 #define INITIAL_BUCKETS 16
 
 struct bucket {
-	const char *key;
+	char *key;
 	void *payload;
 	struct bucket *next;
 };
@@ -75,7 +75,7 @@ static unsigned long sdbm_hash(const char *key)
 
 	while((c = *key++))
 		hash = c + (hash << 6) + (hash << 16) - hash;
-	
+
 	return hash;
 }
 
@@ -87,6 +87,37 @@ struct table *table_new(void)
 	t->buckets = calloc(sizeof(struct bucket *), INITIAL_BUCKETS);
 	t->nbuckets = INITIAL_BUCKETS;
 	return t;
+}
+
+void bucket_free(struct bucket *b)
+{
+	free(b->key);
+	free(b);
+}
+
+void table_del(struct table *t, const char *key)
+{
+	unsigned long hash;
+	unsigned int nbucket;
+	struct bucket **pb;
+
+	hash = sdbm_hash(key);
+	nbucket = hash % t->nbuckets;
+
+	pb = &t->buckets[nbucket];
+
+	while(1)
+	{
+		if(strcmp((*pb)->key, key) == 0)
+		{
+			struct bucket *b;
+			b = *pb;
+			*pb = (*pb)->next;
+			free(b);
+			break;
+		}
+		pb = &(*pb)->next;
+	}
 }
 
 void table_add(struct table *t, const char *key, void *payload)

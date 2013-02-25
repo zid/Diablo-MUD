@@ -48,18 +48,18 @@ character *character_init(client *c)
 	ch->r = room_get("plaza");
 	/* Backreference to the controlling client, to assist in lookups */
 	ch->c = c;
-	
+
 	return ch;
 }
 
-void character_set_username(character *ch, char const *username) 
+void character_set_username(character *ch, char const *username)
 {
-	ch->username = strdup(username);		
+	ch->username = strdup(username);
 }
 
 const char *character_username(character *ch)
 {
-	return ch->username; 
+	return ch->username;
 }
 
 const char *character_room_name(character *ch)
@@ -69,6 +69,7 @@ const char *character_room_name(character *ch)
 
 void character_free(character *ch)
 {
+	room_del_character(ch->r, ch, ROOM_LOGOUT);
 	free(ch->username);
 	free(ch);
 }
