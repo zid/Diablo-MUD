@@ -29,6 +29,11 @@ void character_login(client *c)
 	room_add_character(ch->r, ch, ROOM_LOGIN);
 }
 
+room *character_room(character *ch)
+{
+	return ch->r;
+}
+
 character *character_init(client *c)
 {
 	character *ch;

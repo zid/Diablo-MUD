@@ -14,7 +14,7 @@ struct command {
 
 static void look(struct client *c)
 {
-	c = c;
+	room_look(c);
 }
 
 static void whoami(struct client *c)

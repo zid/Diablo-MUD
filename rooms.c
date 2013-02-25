@@ -3,6 +3,7 @@
 #include <string.h>
 #include "rooms.h"
 #include "table.h"
+#include "client.h"
 #include "character.h" 
 
 static table *rooms;
@@ -20,6 +21,45 @@ struct room {
 void rooms_init(void)
 {
 	rooms = table_new();
+}
+
+void room_look(client *c)
+{
+	table_iterator *t;
+	int cont;
+	character *ch;
+	room *r;
+
+	ch = client_character(c);
+	r = character_room(ch);
+
+	chprintf(ch, "%s\r\n%s\r\n", r->name, r->desc);
+
+	t = table_iterate_over(r->chars);
+	cont = 0;
+
+	while(1)
+	{
+		const char *name;
+		character *tc;
+
+		tc = table_iterate(t);
+		if(!tc)
+			break;
+
+		/* Don't tell someone about themself */
+		if(tc == ch)
+			continue;
+
+		name = character_username(tc);
+		if(cont)
+			chprintf(ch, ", %s", name);
+		else
+			chprintf(ch, "%s", name);
+		cont++;
+	}
+	if(cont)
+		chprintf(ch, " is standing here\r\n");
 }
 
 void room_add_character(struct room *r, character *ch, int reason_code)
@@ -147,7 +187,6 @@ struct room *room_get(const char *name)
 
 	/* See if the room is already loaded */
 	r = table_get(rooms, name);
-	printf("'%s' was %p in rooms\n", name, r);
 	if(r)
 		return r;
 
