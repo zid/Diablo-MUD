@@ -1,4 +1,4 @@
-CFLAGS = -ggdb -W -Wall -fno-PIE
+CFLAGS = -ggdb -W -Wall
 OBJECTS := $(patsubst %.c,%.o,$(wildcard *.c))
 
 mud: $(OBJECTS)

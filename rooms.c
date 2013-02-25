@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "rooms.h"
-#include "hash.h"
+#include "table.h"
 #include "character.h" 
 
 static table *rooms;
@@ -145,9 +145,6 @@ struct room *room_get(const char *name)
 	char buf[128];
 	struct room *r;
 
-	/* This is here because nothing calls room_init yet, maybe main.c->mud_init()->rooms_init()? */
-	if(!rooms)
-		rooms_init();
 	/* See if the room is already loaded */
 	r = table_get(rooms, name);
 	printf("'%s' was %p in rooms\n", name, r);

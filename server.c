@@ -3,6 +3,7 @@
 #include "socket.h"
 #include "client.h"
 #include "server.h"
+#include "init.h"
 
 struct server {
 	int socket;
@@ -19,6 +20,8 @@ server *server_new(int port)
 	s->maxfd = s->socket;
 	FD_ZERO(&s->readfds);
 	FD_SET(s->socket, &s->readfds);
+
+	init_all();
 
 	return s;
 }

@@ -12,6 +12,6 @@ void character_free(character *);
 const char *character_username(character *);
 const char *character_room_name(character *);
 void chprintf(character *, const char *, ...);
-
+void character_login(client *);
 #endif
 

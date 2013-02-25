@@ -3,6 +3,8 @@
 
 typedef struct client client;
 
+#include <stdarg.h>
+
 int client_init(int s);
 int client_handle(int s);
 void client_destroy(struct client *);
@@ -12,8 +14,8 @@ const char *client_buffer(struct client *);
 /* Get a character this client controls */
 struct character *client_character(struct client *c);
 /* Print formatted text to a client */
-void cprintf(struct client *, const char *, ...);
-
+void cprintf(client *, const char *, ...);
+void vcprintf(client *, const char *, va_list);
 
 enum {
 	CONNECTING,

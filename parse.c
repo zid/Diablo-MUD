@@ -1,11 +1,20 @@
+#include <string.h>
 #include "parse.h"
 #include "client.h"
 #include "buffer.h"
 #include "character.h"
+#include "table.h"
+
+static table *commands;
+
+struct command {
+	const char *name;
+	void (*func)(client *);
+};
 
 static void look(struct client *c)
 {
-	c;
+	c = c;
 }
 
 static void whoami(struct client *c)
@@ -18,18 +27,46 @@ static void whoami(struct client *c)
 		character_room_name(ch));
 }
 
+static struct command command_list[] = 
+{
+	{"whoami", 	whoami},
+	{"look", 	look},
+	{NULL,		NULL}
+};
+
+void parser_init(void)
+{
+	int i = 0;
+
+	commands = table_new();
+
+	while(1)
+	{
+		const char *name;
+		void (*func)(client *);
+
+		name = command_list[i].name;
+		func = command_list[i].func;
+		
+		if(!name)
+			break;
+
+		table_add(commands, name, func);
+		i++;
+	}
+}
+
+
 void parse_command(struct client *c)
 {
 	const char *msg = client_buffer(c);
-	int r;
+	void (*func)(client *);
 
-	r = strcmp(msg, "whoami");
-	if(r == 0)
+	func = table_get(commands, msg);
+	if(func)
 	{
-		whoami(c);
+		func(c);
 	} else {
 		cprintf(c, "\r\nWhat?\r\n");
 	}
-
-	return;
 }
