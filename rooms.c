@@ -59,7 +59,7 @@ void room_look(client *c)
 		cont++;
 	}
 	if(cont)
-		chprintf(ch, " is standing here\r\n");
+		chprintf(ch, " is standing here.\r\n");
 }
 
 void room_add_character(struct room *r, character *ch, int reason_code)
@@ -81,8 +81,9 @@ void room_add_character(struct room *r, character *ch, int reason_code)
 
 		name = character_username(ch);
 		reason = reasons[reason_code];
-		chprintf(tc, "%s entered the room via %s\r\n", 
+		chprintf(tc, "\r\n%s entered the room via %s.\r\n", 
 			name, reason );
+		character_prompt(tc);
 	}
 
 	table_add(r->chars, character_username(ch), ch); 

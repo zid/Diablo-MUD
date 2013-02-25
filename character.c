@@ -12,6 +12,11 @@ struct character {
 	room *r;
 };
 
+void character_prompt(character *ch)
+{
+	client_prompt(ch->c);
+}
+
 void chprintf(character *ch, const char *fmt, ...)
 {
 	va_list ap;

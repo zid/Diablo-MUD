@@ -1,9 +1,8 @@
-#ifndef _CHAR_H
-#define _CHAR_H
+#ifndef CHARACTER_H
+#define CHARACTER_H
 
 typedef struct character character;
 
-#include "client.h"
 #include "rooms.h"
 
 character *character_init(client *);
@@ -15,5 +14,6 @@ const char *character_room_name(character *);
 void chprintf(character *, const char *, ...);
 void character_login(client *);
 room *character_room(character *);
+void character_prompt(character *);
 #endif
 

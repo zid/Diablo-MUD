@@ -44,7 +44,7 @@ static void login_ask_password(client *c)
 	client_send(c, msg, sizeof(msg) - 1);
 }
 
-static void send_prompt(client *c)
+void client_prompt(client *c)
 {
 	const char msg[] = "> ";
 
@@ -77,13 +77,13 @@ static void parse(client *c)
 			/* TODO: check the username and password */
 			login_client(c);
 			c->state = CONNECTED;
-			send_prompt(c);
+			client_prompt(c);
 		break;
 		case CONNECTED:
 			/* TODO: parse the command prompt */
 			//send_prompt(c);
 			parse_command(c);
-			send_prompt(c);
+			client_prompt(c);
 		break;
 	}
 }

@@ -16,7 +16,7 @@ struct character *client_character(struct client *c);
 /* Print formatted text to a client */
 void cprintf(client *, const char *, ...);
 void vcprintf(client *, const char *, va_list);
-
+void client_prompt(client *c);
 enum {
 	CONNECTING,
 	USERNAME,
