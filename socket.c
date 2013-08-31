@@ -41,7 +41,6 @@ int socket_read(int s, char *buf, int len)
 int socket_send(sockinfo *si, const char *buf, int len)
 {
 	int r, s;
-	int total = 0;
 
 	s = si->socket;
 
@@ -50,9 +49,10 @@ int socket_send(sockinfo *si, const char *buf, int len)
 		r = send(s, buf, len, 0);
 		if(r <= 0)
 			return r;
-		total += r;
+		buf += r;
+		len -= r;
 	}
-	while(total < len);
+	while(len);
 
 	return r;
 }
